@@ -1,4 +1,4 @@
-import { match, P } from "ts-pattern";
+import { match } from "ts-pattern";
 
 /* Domain */
 type Position = [x: number, y: number];
@@ -15,8 +15,6 @@ type Torus = {
 
 /* Util */
 const compose = <A, B, C>(bc: (b: B) => C, ab: (a: A) => B, a: A) => bc(ab(a));
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const range = (s: number, e: number) =>
   Array.from({ length: e - s }, (_, i) => s + i);

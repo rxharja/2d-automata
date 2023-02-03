@@ -1,5 +1,5 @@
 import { match } from "ts-pattern";
-import { compose, range, makeColorGradient, pickColor } from "./util";
+import { compose, range, pickColor } from "./util";
 
 /* Domain */
 type Position = [x: number, y: number];
@@ -13,30 +13,15 @@ type Torus = {
 };
 
 /* Directions */
-const ne = (maxX: number, maxY: number) => (pos: Position) =>
-  compose(n(maxY), e(maxX), pos);
-const nw = (maxX: number, maxY: number) => (pos: Position) =>
-  compose(n(maxY), w(maxX), pos);
-const se = (maxX: number, maxY: number) => (pos: Position) =>
-  compose(s(maxY), e(maxX), pos);
-const sw = (maxX: number, maxY: number) => (pos: Position) =>
-  compose(s(maxY), w(maxX), pos);
-const n =
-  (maxY: number) =>
-  ([x, y]: Position): Position =>
-    [x, y - 1 < 0 ? maxY : y - 1];
-const e =
-  (maxX: number) =>
-  ([x, y]: Position): Position =>
-    [x + 1 > maxX ? 0 : x + 1, y];
-const s =
-  (maxY: number) =>
-  ([x, y]: Position): Position =>
-    [x, y + 1 > maxY ? 0 : y + 1];
-const w =
-  (maxX: number) =>
-  ([x, y]: Position): Position =>
-    [x - 1 < 0 ? maxX : x - 1, y];
+const ne = (maxX: number, maxY: number) => (pos: Position) => compose(n(maxY), e(maxX), pos);
+const nw = (maxX: number, maxY: number) => (pos: Position) => compose(n(maxY), w(maxX), pos);
+const se = (maxX: number, maxY: number) => (pos: Position) => compose(s(maxY), e(maxX), pos);
+const sw = (maxX: number, maxY: number) => (pos: Position) => compose(s(maxY), w(maxX), pos);
+
+const n = (maxY: number) => ([x, y]: Position): Position => [x, y - 1 < 0 ? maxY : y - 1];
+const e = (maxX: number) => ([x, y]: Position): Position => [x + 1 > maxX ? 0 : x + 1, y];
+const s = (maxY: number) => ([x, y]: Position): Position => [x, y + 1 > maxY ? 0 : y + 1];
+const w = (maxX: number) => ([x, y]: Position): Position => [x - 1 < 0 ? maxX : x - 1, y];
 
 /* Pure */
 const countLive = (pos: Position, { x, y, grid }: Torus) =>

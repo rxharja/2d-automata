@@ -7,8 +7,8 @@ type State = 0 | 1;
 
 type Torus = {
   grid: State[][];
-  x: number;
-  y: number;
+  readonly x: number;
+  readonly y: number;
 };
 
 /* Util */
@@ -20,24 +20,24 @@ const range = (s: number, e: number) =>
 /* Directions */
 const ne = (maxX: number, maxY: number) => (pos: Position) =>
   compose(n(maxY), e(maxX), pos);
+const nw = (maxX: number, maxY: number) => (pos: Position) =>
+  compose(n(maxY), w(maxX), pos);
+const se = (maxX: number, maxY: number) => (pos: Position) =>
+  compose(s(maxY), e(maxX), pos);
+const sw = (maxX: number, maxY: number) => (pos: Position) =>
+  compose(s(maxY), w(maxX), pos);
 const n =
   (maxY: number) =>
   ([x, y]: Position): Position =>
     [x, y - 1 < 0 ? maxY : y - 1];
-const nw = (maxX: number, maxY: number) => (pos: Position) =>
-  compose(n(maxY), w(maxX), pos);
 const e =
   (maxX: number) =>
   ([x, y]: Position): Position =>
     [x + 1 > maxX ? 0 : x + 1, y];
-const se = (maxX: number, maxY: number) => (pos: Position) =>
-  compose(s(maxY), e(maxX), pos);
 const s =
   (maxY: number) =>
   ([x, y]: Position): Position =>
     [x, y + 1 > maxY ? 0 : y + 1];
-const sw = (maxX: number, maxY: number) => (pos: Position) =>
-  compose(s(maxY), w(maxX), pos);
 const w =
   (maxX: number) =>
   ([x, y]: Position): Position =>
@@ -75,29 +75,52 @@ function update() {
 }
 
 function draw(grid: State[][]) {
-  const c = document.getElementById("gol-canvas") as HTMLCanvasElement;
-  const ctx = c.getContext("2d") as CanvasRenderingContext2D;
-  ctx.strokeStyle = "#FFFFFF";
-  ctx.fillStyle = "#FFFFFF";
-
-  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "#111";
+  ctx.fillStyle = "#fff";
 
   grid.forEach((r, x) =>
     r.map((s, y) => {
-      if (s === 1) {
-        ctx.fillRect(Number(x) * 20, Number(y) * 20, 20, 20);
-      }
+      s === 1
+        ? ctx.fillRect(x * px, y * px, px, px)
+        : ctx.strokeRect(x * px, y * px, px, px);
     })
   );
 }
 
-let torus = initTorus(100, 50);
-const c = document.getElementById("gol-canvas") as HTMLCanvasElement;
+let interval: number;
 
-c.addEventListener("mousedown", (e) => {
+const start = document.querySelector("#gol-start");
+start.addEventListener("click", () => {
+  clearInterval(interval);
+  interval = setInterval(update, 80);
+});
+
+const pause = document.querySelector("#gol-pause");
+pause.addEventListener("click", () => {
+  clearInterval(interval);
+});
+
+const random = document.querySelector("#gol-random");
+random.addEventListener("click", () => {
+  torus.grid.forEach((r, x) =>
+    r.forEach((s, y) => (torus.grid[x][y] = Math.random() > 0.85 ? 1 : 0))
+  );
+  draw(torus.grid);
+});
+
+const clear = document.querySelector("#gol-clear");
+clear.addEventListener("click", () => {
+  torus.grid.forEach((r, x) => r.forEach((s, y) => (torus.grid[x][y] = 0)));
+  draw(torus.grid);
+});
+
+const canvas = document.querySelector<HTMLCanvasElement>("#gol-canvas");
+
+canvas.addEventListener("mousedown", (e) => {
   const [a, b] = [
-    Math.floor(e.pageX / 20),
-    Math.floor(e.pageY / 20),
+    Math.floor(e.pageX / px),
+    Math.floor(e.pageY / px),
   ] as Position;
 
   torus.grid[a][b] = 1;
@@ -105,11 +128,15 @@ c.addEventListener("mousedown", (e) => {
   draw(torus.grid);
 });
 
-let interval: number;
-const b = document.querySelector<HTMLButtonElement>("button");
-b.addEventListener("click", (e) => {
-  clearInterval(interval);
-  interval = setInterval(update, 25);
-});
+const px = 10;
 
-update();
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight - 100;
+
+const xs = Math.floor(window.innerWidth / px);
+const ys = Math.floor((window.innerHeight - px * 2) / px);
+
+let torus = initTorus(xs, ys);
+draw(torus.grid);

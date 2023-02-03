@@ -8,6 +8,6 @@
     "target": "ES2019"
   },
   "files": [
-    "index.ts"
+    "src/*"
   ]
 }

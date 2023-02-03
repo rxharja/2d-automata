@@ -7,8 +7,8 @@ export const range = (s: number, e: number) =>
 function byte2Hex(n: number) {
   const nybHexString = "0123456789ABCDEF";
   return (
-    String(nybHexString.substr((n >> 4) & 0x0f, 1)) +
-    nybHexString.substr(n & 0x0f, 1)
+    String(nybHexString.slice((n >> 4) & 0x0f, ((n >> 4) & 0x0f) + 1)) +
+    nybHexString.slice(n & 0x0f, (n & 0x0f) + 1)
   );
 }
 
@@ -26,13 +26,12 @@ export function makeColorGradient(
   width?: number,
   len?: number
 ) {
-  if (center == undefined) center = 128;
-  if (width == undefined) width = 127;
-  if (len == undefined) len = 50;
-  return range(0, len).map((i) => {
-    const red = Math.sin(frequency1 * i + phase1) * width + center;
-    const grn = Math.sin(frequency2 * i + phase2) * width + center;
-    const blu = Math.sin(frequency3 * i + phase3) * width + center;
+  const [c, w, l] = [center ?? 128, width ?? 127, len ?? 50];
+
+  return range(0, l).map((i) => {
+    const red = Math.sin(frequency1 * i + phase1) * w + c;
+    const grn = Math.sin(frequency2 * i + phase2) * w + c;
+    const blu = Math.sin(frequency3 * i + phase3) * w + c;
     return RGB2Color(red, grn, blu);
   });
 }

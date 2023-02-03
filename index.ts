@@ -1,4 +1,5 @@
 import { match } from "ts-pattern";
+import { compose, range, makeColorGradient, pickColor } from "./util";
 
 /* Domain */
 type Position = [x: number, y: number];
@@ -10,12 +11,6 @@ type Torus = {
   readonly x: number;
   readonly y: number;
 };
-
-/* Util */
-const compose = <A, B, C>(bc: (b: B) => C, ab: (a: A) => B, a: A) => bc(ab(a));
-
-const range = (s: number, e: number) =>
-  Array.from({ length: e - s }, (_, i) => s + i);
 
 /* Directions */
 const ne = (maxX: number, maxY: number) => (pos: Position) =>
@@ -64,7 +59,7 @@ const newTorus = (torus: Torus): Torus => ({
 
 function initTorus(endX: number = 3, endY: number = 3) {
   const [x, y] = [endX < 3 ? 3 : endX, endY < 3 ? 3 : endY];
-  const cells = range(0, x).map((x) => range(0, y).map<State>((y) => 0));
+  const cells = range(0, x).map((_x) => range(0, y).map<State>((_y) => 0));
   return { grid: cells, x: x - 1, y: y - 1 };
 }
 
@@ -77,8 +72,7 @@ function update() {
 function draw(grid: State[][]) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.strokeStyle = "#111";
-  ctx.fillStyle = "#fff";
-
+  ctx.fillStyle = pickColor();
   grid.forEach((r, x) =>
     r.map((s, y) => {
       s === 1
@@ -104,14 +98,14 @@ pause.addEventListener("click", () => {
 const random = document.querySelector("#gol-random");
 random.addEventListener("click", () => {
   torus.grid.forEach((r, x) =>
-    r.forEach((s, y) => (torus.grid[x][y] = Math.random() > 0.85 ? 1 : 0))
+    r.forEach((_, y) => (torus.grid[x][y] = Math.random() > 0.85 ? 1 : 0))
   );
   draw(torus.grid);
 });
 
-const clear = document.querySelector("#gol-clear");
+const clear = document.querySelector<HTMLButtonElement>("#gol-clear");
 clear.addEventListener("click", () => {
-  torus.grid.forEach((r, x) => r.forEach((s, y) => (torus.grid[x][y] = 0)));
+  torus.grid.forEach((r, x) => r.forEach((_, y) => (torus.grid[x][y] = 0)));
   draw(torus.grid);
 });
 
@@ -136,7 +130,7 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight - 100;
 
 const xs = Math.floor(window.innerWidth / px);
-const ys = Math.floor((window.innerHeight - px * 2) / px);
+const ys = Math.floor(window.innerHeight / px);
 
 let torus = initTorus(xs, ys);
 draw(torus.grid);

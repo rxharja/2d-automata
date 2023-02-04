@@ -26,7 +26,7 @@ let interval: number;
 const start = document.querySelector("#gol-start")!;
 start.addEventListener("click", () => {
   clearInterval(interval);
-  interval = setInterval(() => update("Hat"), 80);
+  interval = setInterval(() => update(rule), 80);
 });
 
 const pause = document.querySelector("#gol-pause")!;
@@ -47,6 +47,13 @@ clear.addEventListener("click", () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   torus.grid.forEach((r, x) => r.forEach((_, y) => (torus.grid[x][y] = 0)));
   draw(torus.grid);
+});
+
+const rules = document.querySelector<HTMLSelectElement>("#rules")!;
+let rule: Rule = rules.value as Rule;
+
+rules.addEventListener("change", () => {
+  rule = rules.value as Rule;
 });
 
 const canvas = document.querySelector<HTMLCanvasElement>("#gol-canvas")!;

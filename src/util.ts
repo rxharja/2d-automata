@@ -44,7 +44,6 @@ export function pickColor() {
     gradientIndex = 0;
   }
   const g = gradient[gradientIndex];
-  console.log(g);
   gradientIndex++;
   return g;
 }

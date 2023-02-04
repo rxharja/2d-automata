@@ -1,7 +1,22 @@
-import { match } from "ts-pattern";
+import { match, P } from "ts-pattern";
 import { compose, range } from "./util";
 
-export type Rule = "Game of Life" | "Rule 30" | "Hat";
+export type Rule =
+  | "Game of Life"
+  | "Rule 30"
+  | "Rule 90"
+  | "Seeds"
+  | "Life without Death"
+  | "Day and Night"
+  | "Diamoeba";
+
+export const lifeLike: Rule[] = [
+  "Game of Life",
+  "Seeds",
+  "Life without Death",
+  "Day and Night",
+  "Diamoeba",
+];
 
 export type Position = [x: number, y: number];
 
@@ -46,14 +61,36 @@ const countLive =
       .map<number>(([x, y]) => grid[x][y])
       .reduceRight((t, s) => t + s, 0);
 
-const golDirs = (x: number, y: number) =>
+const mooreNeighborhood = (x: number, y: number) =>
   countLive([nw(x, y), n(y), ne(x, y), e(x), se(x, y), s(y), sw(x, y), w(x)]);
 
-const gameOfLife = ([x, y]: Position, torus: Torus) =>
-  match([torus.grid[x][y], golDirs(torus.x, torus.y)([x, y], torus)])
+const life = ([x, y]: Position, torus: Torus) =>
+  match([torus.grid[x][y], mooreNeighborhood(torus.x, torus.y)([x, y], torus)])
     .with([0, 3], () => 1)
-    .with([1, 2], () => 1)
-    .with([1, 3], () => 1)
+    .with([1, 2], [1, 3], () => 1)
+    .otherwise(() => 0) as State;
+
+const lifeWithoutDeath = ([x, y]: Position, torus: Torus) =>
+  match([torus.grid[x][y], mooreNeighborhood(torus.x, torus.y)([x, y], torus)])
+    .with([0, 3], () => 1)
+    .with([1, P.number], () => 1)
+    .otherwise(() => 0) as State;
+
+const diamoeba = ([x, y]: Position, torus: Torus) =>
+  match([torus.grid[x][y], mooreNeighborhood(torus.x, torus.y)([x, y], torus)])
+    .with([0, 3], [0, P.when((v) => v >= 5 && v <= 8)], () => 1)
+    .with([1, P.when((v) => v >= 5 && v <= 8)], () => 1)
+    .otherwise(() => 0) as State;
+
+const dayAndNight = ([x, y]: Position, torus: Torus) =>
+  match([torus.grid[x][y], mooreNeighborhood(torus.x, torus.y)([x, y], torus)])
+    .with([0, 3], [0, P.when((v) => v >= 6 && v <= 8)], () => 1)
+    .with([1, 3], [1, 4], [1, P.when((v) => v >= 6 && v <= 8)], () => 1)
+    .otherwise(() => 0) as State;
+
+const seeds = ([x, y]: Position, torus: Torus) =>
+  match([torus.grid[x][y], mooreNeighborhood(torus.x, torus.y)([x, y], torus)])
+    .with([0, 2], () => 1)
     .otherwise(() => 0) as State;
 
 const rule30 = ([x, y]: Position, { x: maxX, y: maxY, grid }: Torus) => {
@@ -66,16 +103,20 @@ const rule30 = ([x, y]: Position, { x: maxX, y: maxY, grid }: Torus) => {
   return (left ^ (center | right)) as State;
 };
 
-const hat = ([x, y]: Position, { x: maxX, y: maxY, grid }: Torus) => {
+const rule90 = ([x, y]: Position, { x: maxX, y: maxY, grid }: Torus) => {
   const [[lx, ly], [rx, ry]] = [nw(maxX, maxY)([x, y]), ne(maxX, maxY)([x, y])];
   const [left, right] = [grid[lx][ly], grid[rx][ry]];
   return (left ^ right) as State;
 };
 
 const rules: Map<Rule, (p: Position, t: Torus) => State> = new Map([
-  ["Game of Life", gameOfLife],
+  ["Game of Life", life],
+  ["Life without Death", lifeWithoutDeath],
+  ["Day and Night", dayAndNight],
+  ["Diamoeba", diamoeba],
+  ["Seeds", seeds],
   ["Rule 30", rule30],
-  ["Hat", hat],
+  ["Rule 90", rule90],
 ]);
 
 export const newTorus = (torus: Torus, rule: Rule): Torus => ({

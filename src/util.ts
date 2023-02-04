@@ -5,11 +5,11 @@ export const range = (s: number, e: number) =>
   Array.from({ length: e - s }, (_, i) => s + i);
 
 function byte2Hex(n: number) {
-  const nybHexString = "0123456789ABCDEF";
-  return (
-    String(nybHexString.slice((n >> 4) & 0x0f, ((n >> 4) & 0x0f) + 1)) +
-    nybHexString.slice(n & 0x0f, (n & 0x0f) + 1)
-  );
+  const hex = "0123456789ABCDEF";
+  return `${hex.slice((n >> 4) & 0x0f, ((n >> 4) & 0x0f) + 1)}${hex.slice(
+    n & 0x0f,
+    (n & 0x0f) + 1
+  )}`;
 }
 
 const RGB2Color = (r: number, g: number, b: number) =>

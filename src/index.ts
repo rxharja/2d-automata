@@ -1,8 +1,15 @@
-import { createTorus, newTorus, Position, Rule, State } from "./automata";
+import {
+  createTorus,
+  lifeLike,
+  newTorus,
+  Position,
+  Rule,
+  State,
+} from "./automata";
 import { pickColor } from "./util";
 
 function update(rule: Rule) {
-  if (rule === "Game of Life") {
+  if (lifeLike.includes(rule)) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
   draw(torus.grid);
@@ -26,7 +33,7 @@ let interval: number;
 const start = document.querySelector("#gol-start")!;
 start.addEventListener("click", () => {
   clearInterval(interval);
-  interval = setInterval(() => update(rule), 80);
+  interval = setInterval(() => update(rule), 1);
 });
 
 const pause = document.querySelector("#gol-pause")!;
